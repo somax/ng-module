@@ -4,7 +4,10 @@
 	"main": "src/ng-module.min.js",
 	"ignore":[
 		"demo",
-		"test"
+		"test",
+		"karma*.js",
+		"Gruntfile.js",
+		".*"
 	],
 	"dependencies": {
 

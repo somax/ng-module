@@ -7,6 +7,7 @@
 		"test",
 		"karma*.js",
 		"Gruntfile.js",
+		"package.json",
 		".*"
 	],
 	"dependencies": {

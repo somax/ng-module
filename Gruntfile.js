@@ -10,7 +10,7 @@ module.exports = function (grunt) {
 		uglify: {
 			build: {
 				files: {
-					'src/ng-module.min.js': [
+					'ng-module.min.js': [
 						'src/ng-module.js'
 					]
 				}

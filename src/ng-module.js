@@ -10,13 +10,26 @@
 	 * @example define(
 	 *          ['a','b'],// dependencie
 	 *          ngModule(
-	 *          	'moduleName', // moduleName
-	 *           	function (module,a,b) {
+	 *            'moduleName', // moduleName
+	 *            function (module,a,b) {
 	 *          	 	angular.module(module.name) //其实返回的就是module，但是这样写 ngmin 才能正确处理。
 	 *          		.controller(...)
 	 *          	 	.directive(...)
 	 *             	}
 	 *          )
+	 *  注意：
+	 *  reuqirejs 加载 ngRoute 之类的模块，传递到回调函数中的是 undefined,
+	 *  ngModule无法自动执行注入，需要在require.config()中设置shim，
+	 *  返回包含name属性的对象以解决此问题，参考如下代码：
+	 *  require.config({
+	 *              shim: {
+	 *	                'ngRoute': {
+	 *		                exports: 'ngRoute',
+	 *		                deps: ['angular'],
+	 *		                init:function(){
+	 *			                    return {name:'ngRoute'}
+	 *		                }
+	 *	            })
 	 */
 	var ngModule = function(ngModuleName, callback) {
 
@@ -26,7 +39,16 @@
 		 * @return {Boolean}
 		 */
 		function isNgModule(_module) {
-			return ((typeof _module === 'object') && _module.hasOwnProperty('name') && _module.hasOwnProperty('controller') && _module.hasOwnProperty('factory'));
+			var _is;
+			if (_module && _module.hasOwnProperty('name')) {
+				try {
+					angular.module(_module.name);
+					_is = true;
+				} catch (e) {
+					_is = false;
+				}
+			}
+			return _is
 		}
 
 		/**
@@ -43,7 +65,7 @@
 			// 取出angular module的模块名称列表
 			var ngDependencies = [];
 			angular.forEach(dependencieModules, function(_module) {
-				if (isNgModule(_module)) {
+				if (_module && isNgModule(_module)) {
 					ngDependencies.push(_module.name);
 				}
 			});
@@ -52,6 +74,7 @@
 			var ngModule;
 			try {
 				ngModule = angular.module(ngModuleName);
+				ngModule.requires = module.requires.concat(ngDependencies);
 			} catch (e) {
 				ngModule = angular.module(ngModuleName, ngDependencies);
 			}
